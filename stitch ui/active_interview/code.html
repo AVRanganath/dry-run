@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Active Interview View</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#1b1c1c",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#fe8357",
+                        "surface-container": "#f0eded",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#aeceb7",
+                        "on-primary-fixed-variant": "#304d3b",
+                        "surface": "#fcf9f8",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c2c8c1",
+                        "outline": "#727973",
+                        "surface-bright": "#fcf9f8",
+                        "secondary-fixed": "#ffdbcf",
+                        "inverse-surface": "#303030",
+                        "tertiary": "#1e1b13",
+                        "tertiary-fixed-dim": "#ccc6b8",
+                        "on-secondary-fixed": "#390c00",
+                        "on-tertiary-fixed-variant": "#4a463c",
+                        "on-surface-variant": "#424843",
+                        "background": "#fcf9f8",
+                        "surface-tint": "#486552",
+                        "on-primary-fixed": "#042012",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary-fixed-dim": "#ffb59c",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#a23e18",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-dim": "#dcd9d9",
+                        "tertiary-fixed": "#e9e2d4",
+                        "on-surface": "#1b1c1c",
+                        "primary": "#042112",
+                        "on-tertiary-fixed": "#1e1b13",
+                        "primary-fixed": "#caead3",
+                        "on-secondary-container": "#6f2000",
+                        "surface-variant": "#e4e2e1",
+                        "on-primary-container": "#81a08a",
+                        "on-secondary-fixed-variant": "#822801",
+                        "on-tertiary-container": "#9d978b",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-container": "#333027",
+                        "primary-container": "#1a3626",
+                        "inverse-primary": "#aeceb7"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px",
+                        "container-max": "1120px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "data-mono": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "headline-xl": ["Playfair Display"],
+                        "label-caps": ["JetBrains Mono"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600" }]
+                    },
+                    boxShadow: {
+                        'embossed': '4px 4px 12px rgba(0,0,0,0.08), -2px -2px 8px rgba(255,255,255,0.8), inset 0px 1px 1px rgba(255,255,255,1)',
+                        'debossed': 'inset 2px 2px 6px rgba(0,0,0,0.1), inset -1px -1px 4px rgba(255,255,255,0.5)',
+                        'mechanical-button': '0px 4px 8px rgba(0,0,0,0.2), inset 0px 2px 4px rgba(255,255,255,0.4)',
+                        'mechanical-button-active': 'inset 2px 4px 10px rgba(0,0,0,0.5), inset -1px -1px 4px rgba(255,255,255,0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-hidden antialiased selection:bg-primary selection:text-on-primary">
+<!-- Minimal Header (Task-Focused / Distraction Free) -->
+<header class="w-full px-gutter py-6 flex justify-between items-start max-w-container-max mx-auto absolute top-0 left-0 right-0 z-10">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container shadow-embossed active:shadow-debossed group" title="Exit Session">
+<span class="material-symbols-outlined group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+</button>
+<div class="flex flex-col items-end gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-70 uppercase tracking-widest">Session Progress</span>
+<!-- Mechanical Tally Marks (2 of 5) -->
+<div class="flex gap-1.5 items-end h-6" title="Question 2 of 5">
+<!-- Mark 1 (Completed) -->
+<div class="w-1.5 h-5 bg-primary shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)] transform -rotate-2 rounded-sm"></div>
+<!-- Mark 2 (Active/Completed) -->
+<div class="w-1.5 h-5 bg-primary shadow-[inset_1px_1px_2px_rgba(0,0,0,0.5)] transform rotate-1 rounded-sm"></div>
+<!-- Mark 3 (Pending) -->
+<div class="w-1 h-5 bg-outline-variant/40 shadow-debossed transform -rotate-1 rounded-sm"></div>
+<!-- Mark 4 (Pending) -->
+<div class="w-1 h-5 bg-outline-variant/40 shadow-debossed transform rotate-3 rounded-sm"></div>
+<!-- Mark 5 (Pending) -->
+<div class="w-1 h-5 bg-outline-variant/40 shadow-debossed transform -rotate-2 rounded-sm relative">
+<!-- Diagonal strike for 5th (hidden but structural) -->
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-outline text-[10px]">02 / 05</span>
+</div>
+</header>
+<!-- Main Interrogation Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center px-gutter pt-24 pb-12 max-w-4xl mx-auto w-full relative z-0">
+<!-- Current Question Card (Raised White Card) -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-8 md:p-14 shadow-embossed border border-surface-variant relative transform transition-transform hover:scale-[1.01] duration-500 ease-out z-10">
+<!-- Decorative Stamped Badge -->
+<div class="absolute -top-3 -right-3 border-2 border-secondary text-secondary px-3 py-1 rounded font-label-caps text-label-caps uppercase tracking-widest transform rotate-6 opacity-90 shadow-sm bg-surface-container-lowest">
+                Active Probe
+            </div>
+<p class="font-headline-md md:font-headline-lg text-headline-md md:text-headline-lg text-primary text-center leading-relaxed">
+                Describe a defining moment where your strategic framework conflicted with immediate operational realities. How did you reconcile the compromise?
+            </p>
+</div>
+<!-- Analog Audio Visualizer (CRT Line) -->
+<div class="w-full max-w-lg mt-16 mb-12 h-12 bg-surface-container shadow-debossed rounded-full flex items-center justify-center px-6 relative overflow-hidden border border-outline-variant/20">
+<!-- Glass reflection overlay -->
+<div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none rounded-full"></div>
+<svg class="w-full h-full text-secondary opacity-80" id="waveform-svg" preserveaspectratio="none" viewbox="0 0 100 20">
+<path d="M0,10 L100,10" fill="none" id="waveform-path" stroke="currentColor" stroke-linecap="round" stroke-width="1" vector-effect="non-scaling-stroke"></path>
+</svg>
+<!-- Scanning line effect -->
+<div class="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[scan_3s_linear_infinite]"></div>
+</div>
+<!-- Controls Area -->
+<div class="flex flex-col items-center gap-10 w-full">
+<!-- Mechanical Toggle Switch (Type vs Record) -->
+<div class="flex items-center gap-4">
+<span class="font-data-mono text-data-mono text-on-surface-variant transition-colors" id="label-type">KEYBOARD</span>
+<div class="relative w-20 h-8 bg-surface-container-high shadow-debossed rounded-full p-1 cursor-pointer" id="mode-toggle">
+<div class="absolute top-1 left-1 w-8 h-6 bg-surface shadow-embossed rounded-full transition-transform duration-300 ease-in-out transform translate-x-10 flex items-center justify-center" id="toggle-slider">
+<div class="w-1 h-3 bg-outline-variant/50 rounded-full flex gap-0.5">
+<div class="w-[1px] h-full bg-outline/30"></div>
+<div class="w-[1px] h-full bg-outline/30"></div>
+<div class="w-[1px] h-full bg-outline/30"></div>
+</div>
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-secondary font-bold transition-colors" id="label-record">VOCAL</span>
+</div>
+<!-- Tactile Record Button -->
+<div class="relative group" id="record-container">
+<!-- Outer Metallic Bezel -->
+<div class="w-32 h-32 rounded-full bg-surface-container shadow-[10px_10px_20px_rgba(0,0,0,0.1),-10px_-10px_20px_rgba(255,255,255,0.8),inset_0px_2px_4px_rgba(255,255,255,1)] border border-outline-variant/40 flex items-center justify-center relative p-2">
+<!-- Inner indented well -->
+<div class="w-full h-full rounded-full bg-surface-container-high shadow-debossed flex items-center justify-center p-2">
+<!-- Actual Record Button -->
+<button class="w-full h-full rounded-full bg-secondary shadow-mechanical-button flex items-center justify-center transition-all duration-150 focus:outline-none" id="record-btn">
+<span class="material-symbols-outlined icon-fill text-white text-4xl">mic</span>
+</button>
+</div>
+</div>
+<!-- Status Text -->
+<div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 font-data-mono text-data-mono text-secondary tracking-widest uppercase opacity-0 transition-opacity duration-300" id="recording-status">
+                    Recording...
+                </div>
+</div>
+<!-- Text Input Area (Hidden by default) -->
+<div class="w-full max-w-2xl hidden opacity-0 transition-opacity duration-500" id="text-input-area">
+<textarea class="w-full h-40 bg-surface-container shadow-debossed border-none rounded-lg p-6 font-body-lg text-body-lg text-on-surface focus:ring-1 focus:ring-primary focus:outline-none resize-none placeholder-outline-variant/60" placeholder="Type your response here..."></textarea>
+<div class="flex justify-end mt-4">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg shadow-embossed hover:shadow-mechanical-button active:shadow-debossed transform transition-all active:translate-y-1 font-label-caps text-label-caps tracking-widest uppercase">
+                        Submit Answer
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<style>
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(500px); }
+        }
+        
+        /* Custom scrollbar for text area to match theme */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: var(--color-outline-variant);
+            border-radius: 4px;
+        }
+    </style>
+<script>
+        // --- Toggle Logic ---
+        const toggle = document.getElementById('mode-toggle');
+        const slider = document.getElementById('toggle-slider');
+        const labelType = document.getElementById('label-type');
+        const labelRecord = document.getElementById('label-record');
+        const recordContainer = document.getElementById('record-container');
+        const textInputArea = document.getElementById('text-input-area');
+        const waveform = document.getElementById('waveform-svg');
+
+        let isRecordMode = true;
+
+        toggle.addEventListener('click', () => {
+            isRecordMode = !isRecordMode;
+            
+            if (isRecordMode) {
+                // Switch to Record Mode
+                slider.classList.remove('translate-x-0');
+                slider.classList.add('translate-x-10');
+                
+                labelRecord.classList.add('text-secondary', 'font-bold');
+                labelRecord.classList.remove('text-on-surface-variant', 'font-normal');
+                
+                labelType.classList.remove('text-primary', 'font-bold');
+                labelType.classList.add('text-on-surface-variant', 'font-normal');
+
+                textInputArea.classList.add('hidden');
+                setTimeout(() => textInputArea.classList.remove('opacity-100'), 10);
+                
+                recordContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    recordContainer.classList.add('opacity-100');
+                    waveform.classList.remove('opacity-0');
+                }, 50);
+
+            } else {
+                // Switch to Type Mode
+                slider.classList.remove('translate-x-10');
+                slider.classList.add('translate-x-0');
+
+                labelType.classList.add('text-primary', 'font-bold');
+                labelType.classList.remove('text-on-surface-variant', 'font-normal');
+                
+                labelRecord.classList.remove('text-secondary', 'font-bold');
+                labelRecord.classList.add('text-on-surface-variant', 'font-normal');
+
+                recordContainer.classList.remove('opacity-100');
+                waveform.classList.add('opacity-0');
+                setTimeout(() => {
+                    recordContainer.classList.add('hidden');
+                    textInputArea.classList.remove('hidden');
+                    setTimeout(() => textInputArea.classList.add('opacity-100'), 50);
+                }, 300);
+            }
+        });
+
+        // --- Record Button Interaction ---
+        const recordBtn = document.getElementById('record-btn');
+        const statusText = document.getElementById('recording-status');
+        let isRecording = false;
+
+        recordBtn.addEventListener('mousedown', () => {
+            recordBtn.classList.remove('shadow-mechanical-button');
+            recordBtn.classList.add('shadow-mechanical-button-active', 'scale-95');
+        });
+        
+        recordBtn.addEventListener('mouseup', () => {
+            recordBtn.classList.add('shadow-mechanical-button');
+            recordBtn.classList.remove('shadow-mechanical-button-active', 'scale-95');
+        });
+
+        recordBtn.addEventListener('mouseleave', () => {
+             recordBtn.classList.add('shadow-mechanical-button');
+             recordBtn.classList.remove('shadow-mechanical-button-active', 'scale-95');
+        });
+
+        recordBtn.addEventListener('click', () => {
+            isRecording = !isRecording;
+            if(isRecording) {
+                // Pulse effect
+                recordBtn.classList.add('animate-pulse');
+                statusText.classList.remove('opacity-0');
+                statusText.classList.add('opacity-100');
+            } else {
+                recordBtn.classList.remove('animate-pulse');
+                statusText.classList.add('opacity-0');
+                statusText.classList.remove('opacity-100');
+            }
+        });
+
+        // --- Analog Waveform Simulation (CRT Oscilloscope Style) ---
+        const path = document.getElementById('waveform-path');
+        let time = 0;
+        
+        function animateWaveform() {
+            if (!isRecordMode) {
+                requestAnimationFrame(animateWaveform);
+                return;
+            }
+
+            time += 0.05;
+            let d = "M0,10 ";
+            
+            // Base flatline with subtle noise
+            let amplitude = isRecording ? 8 : 1.5;
+            let frequency = isRecording ? 0.2 : 0.05;
+
+            for (let i = 0; i <= 100; i += 2) {
+                // Generate a wavy line that looks organic and analog
+                let noise = Math.sin(i * frequency + time) * amplitude;
+                
+                // Add some high frequency noise if recording
+                if(isRecording) {
+                    noise += (Math.random() - 0.5) * 3;
+                    // Envelope shaping to keep edges attached to center
+                    let envelope = Math.sin((i/100) * Math.PI);
+                    noise *= envelope;
+                }
+
+                let y = 10 + noise;
+                
+                // Clamp within viewBox
+                y = Math.max(2, Math.min(18, y));
+                
+                d += `L${i},${y} `;
+            }
+            
+            path.setAttribute('d', d);
+            requestAnimationFrame(animateWaveform);
+        }
+        
+        animateWaveform();
+    </script>
+</body></html>
