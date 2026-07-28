@@ -157,7 +157,7 @@ export default function Dashboard() {
                     Preparation Volume
                   </h2>
                   <div className="debossed-well bg-surface-container-highest p-6 rounded-sm mb-6 min-h-[160px]">
-                    <div className="font-label-caps text-label-caps text-on-surface-variant mb-4 border-b border-outline-variant/30 pb-2">Modules Completed</div>
+                    <div className="font-label-caps text-label-caps text-on-surface-variant mb-4 border-b border-outline-variant/30 pb-2">Sessions Completed</div>
                     <div className="flex flex-wrap gap-x-6 gap-y-4 pt-2">
                       {renderTallies(totalSessions)}
                     </div>
@@ -213,13 +213,9 @@ export default function Dashboard() {
           )}
 
           {/* Footer */}
-          <footer className="w-full py-8 border-t border-dashed border-outline-variant max-w-container-max mx-auto flex justify-between items-center mt-16">
+          <footer className="w-full py-8 border-t border-dashed border-outline-variant max-w-container-max mx-auto flex justify-center items-center mt-16">
             <div className="font-data-mono text-data-mono text-on-surface-variant opacity-60">
-              © 2026 AI COACH. ALL RIGHTS RESERVED.
-            </div>
-            <div className="flex space-x-6">
-              <a className="font-data-mono text-data-mono text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity" href="#">Privacy Protocol</a>
-              <a className="font-data-mono text-data-mono text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity" href="#">Service Terms</a>
+              © 2026 A V Ranganath.
             </div>
           </footer>
         </div>

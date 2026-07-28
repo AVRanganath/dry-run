@@ -117,8 +117,7 @@ export default function Setup() {
                   <p className="font-data-mono text-data-mono text-on-surface-variant text-center max-w-xs">
                     {resumeText ? 'Document loaded successfully.' : 'Drag and drop PDF, DOCX, or raw text file.'}
                   </p>
-                  {/* Fake progress bar (hidden by default, structural example) */}
-                  <div className="absolute bottom-0 left-0 h-1 bg-secondary w-0 group-hover:w-1/3 transition-all duration-700 ease-in-out"></div>
+                  {/* File Upload UI */}
                 </div>
                 
                 <div className="mt-8 pt-6 border-t border-dashed border-outline-variant/50">

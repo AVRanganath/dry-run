@@ -234,12 +234,8 @@ function ReportClient() {
             </article>
           </div>
 
-          <footer className="w-full py-8 mt-16 border-t border-dashed border-outline-variant bg-transparent max-w-container-max mx-auto px-gutter flex justify-between items-center">
-            <span className="font-data-mono text-data-mono text-on-surface-variant opacity-60">© 2026 AI COACH. ALL RIGHTS RESERVED.</span>
-            <div className="flex space-x-6">
-              <a className="font-data-mono text-data-mono text-on-surface-variant opacity-60 hover:opacity-100 hover:text-primary transition-opacity" href="#">Privacy Protocol</a>
-              <a className="font-data-mono text-data-mono text-on-surface-variant opacity-60 hover:opacity-100 hover:text-primary transition-opacity" href="#">Service Terms</a>
-            </div>
+          <footer className="w-full py-8 mt-16 border-t border-dashed border-outline-variant bg-transparent max-w-container-max mx-auto px-gutter flex justify-center items-center">
+            <span className="font-data-mono text-data-mono text-on-surface-variant opacity-60">© 2026 A V Ranganath.</span>
           </footer>
         </main>
       </div>
