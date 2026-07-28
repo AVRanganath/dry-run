@@ -14,18 +14,38 @@ async function request(url: string, options: RequestInit = {}) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   
-  const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${url}`, { ...options, headers });
+  } catch (e) {
+    throw new Error('Cannot connect to server. Make sure the backend is running.');
+  }
   
   if (res.status === 401) {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
-    if (typeof window !== 'undefined') window.location.href = '/login';
-    throw new Error('Unauthorized');
+    if (typeof window !== 'undefined' && !url.includes('/auth/')) {
+      window.location.href = '/login';
+    }
+    throw new Error('Invalid credentials');
   }
   
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(err.message || `HTTP ${res.status}`);
+    let errMsg = `Request failed (${res.status})`;
+    try {
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const err = await res.json();
+        // Handle Laravel validation errors
+        if (err.errors) {
+          const messages = Object.values(err.errors).flat();
+          errMsg = (messages as string[]).join('. ');
+        } else {
+          errMsg = err.message || errMsg;
+        }
+      }
+    } catch {}
+    throw new Error(errMsg);
   }
   
   return res.json();

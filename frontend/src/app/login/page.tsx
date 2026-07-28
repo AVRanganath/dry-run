@@ -27,7 +27,7 @@ export default function LoginPage() {
           setError('Passwords do not match');
           return;
         }
-        await register({ name, email, password });
+        await register({ name, email, password, password_confirmation: confirmPassword });
       }
       router.push('/');
     } catch (err: any) {
