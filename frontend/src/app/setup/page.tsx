@@ -51,7 +51,7 @@ export default function Setup() {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden">
         <Sidebar />
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">

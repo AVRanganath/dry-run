@@ -34,7 +34,7 @@ function ReportClient() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center bg-background">Loading report...</div>
       </div>
@@ -43,7 +43,7 @@ function ReportClient() {
 
   if (error || !session) {
     return (
-      <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center bg-background text-error">{error || 'Session not found'}</div>
       </div>
@@ -112,7 +112,7 @@ function ReportClient() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden">
       <Sidebar />
       {/* Main Content Canvas */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background relative">
@@ -244,7 +244,7 @@ function ReportClient() {
 export default function Report() {
   return (
     <AuthGuard>
-      <Suspense fallback={<div className="flex h-screen w-full overflow-hidden bg-background items-center justify-center">Loading...</div>}>
+      <Suspense fallback={<div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background items-center justify-center">Loading...</div>}>
         <ReportClient />
       </Suspense>
     </AuthGuard>

@@ -23,7 +23,7 @@ export default function ReportsPage() {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen w-full overflow-hidden bg-background">
+      <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
           <div className="flex-1 overflow-y-auto px-margin-mobile md:px-gutter py-8 md:py-margin-desktop">

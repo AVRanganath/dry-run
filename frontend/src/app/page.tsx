@@ -78,7 +78,7 @@ export default function Dashboard() {
 
   return (
     <AuthGuard>
-      <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden">
         <Sidebar />
 
       {/* Main Content Canvas */}
