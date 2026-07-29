@@ -23,7 +23,6 @@ export default function Sidebar() {
   ];
 
   const bottomLinks = [
-    { href: '/archive', icon: 'inventory_2', label: 'Archive' },
     { href: '/support', icon: 'help_outline', label: 'Support' },
   ];
 
