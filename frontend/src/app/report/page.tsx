@@ -58,20 +58,33 @@ function ReportClient() {
     year: 'numeric'
   }).toUpperCase();
 
-  // Extract strengths and improvements from answers
-  const strengths: any[] = [];
-  const improvements: any[] = [];
+  // Extract strengths and improvements from answers (deduplicated)
+  const strengthsMap = new Map<string, any>();
+  const improvementsMap = new Map<string, any>();
   
   session.questions?.forEach((q: any) => {
     if (q.answer) {
       if (q.answer.strengths && Array.isArray(q.answer.strengths)) {
-        q.answer.strengths.forEach((s: string) => strengths.push({ title: 'Observed Strength', detail: s }));
+        q.answer.strengths.forEach((s: string) => {
+          const key = s.toLowerCase().trim();
+          if (!strengthsMap.has(key)) {
+            strengthsMap.set(key, { title: 'Observed Strength', detail: s });
+          }
+        });
       }
       if (q.answer.improvements && Array.isArray(q.answer.improvements)) {
-        q.answer.improvements.forEach((i: string) => improvements.push({ title: 'Area for Refinement', detail: i }));
+        q.answer.improvements.forEach((i: string) => {
+          const key = i.toLowerCase().trim();
+          if (!improvementsMap.has(key)) {
+            improvementsMap.set(key, { title: 'Area for Refinement', detail: i });
+          }
+        });
       }
     }
   });
+
+  const strengths = Array.from(strengthsMap.values());
+  const improvements = Array.from(improvementsMap.values());
 
   // Since Gemini only returns a single score out of 10, we'll derive the breakdown metrics
   // from the overall score so the UI still looks complete and data-rich.
