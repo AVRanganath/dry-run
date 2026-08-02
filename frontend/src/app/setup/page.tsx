@@ -16,18 +16,9 @@ export default function Setup() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.name.endsWith('.pdf') || file.name.endsWith('.docx')) {
-      setError('Please upload a plain text (.txt) or Markdown (.md) file, or copy-paste your resume into a text file.');
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = (event) => {
-      const text = event.target?.result as string;
-      if (text && text.trim().length > 0) {
-        setResumeText(text);
-        setError('');
-      }
+      setResumeText(event.target?.result as string);
     };
     reader.readAsText(file);
   };
