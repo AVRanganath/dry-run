@@ -29,15 +29,6 @@ const faqs = [
 
 export default function Support() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
-  const [contactSent, setContactSent] = useState(false);
-  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
-
-  const handleContact = (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactSent(true);
-    setContactForm({ name: '', email: '', message: '' });
-    setTimeout(() => setContactSent(false), 3000);
-  };
 
   return (
     <AuthGuard>
@@ -51,11 +42,11 @@ export default function Support() {
                   <span className="material-symbols-outlined text-primary text-3xl">help_outline</span>
                   <h2 className="font-headline-lg text-headline-lg text-primary">Support & Resources</h2>
                 </div>
-                <p className="font-body-lg text-body-lg text-on-surface-variant">Frequently asked questions and contact information.</p>
+                <p className="font-body-lg text-body-lg text-on-surface-variant">Frequently asked questions and guidance for interview simulations.</p>
               </header>
 
               {/* FAQ Section */}
-              <div className="mb-16">
+              <div className="max-w-3xl">
                 <h3 className="font-headline-md text-headline-md text-primary mb-6 flex items-center space-x-2">
                   <span className="material-symbols-outlined">quiz</span>
                   <span>Frequently Asked Questions</span>
@@ -81,59 +72,6 @@ export default function Support() {
                       )}
                     </div>
                   ))}
-                </div>
-              </div>
-
-              {/* Contact Section */}
-              <div>
-                <h3 className="font-headline-md text-headline-md text-primary mb-6 flex items-center space-x-2">
-                  <span className="material-symbols-outlined">mail</span>
-                  <span>Contact & Feedback</span>
-                </h3>
-                <div className="bg-surface rounded-lg embossed-card p-8 max-w-2xl">
-                  {contactSent && (
-                    <div className="mb-6 bg-primary-fixed text-on-primary-fixed p-4 rounded-lg font-body-md">
-                      Message sent successfully. Thank you for your feedback!
-                    </div>
-                  )}
-                  <form onSubmit={handleContact} className="space-y-5">
-                    <div>
-                      <label className="font-label-caps text-label-caps text-on-surface-variant mb-2 block">Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={contactForm.name}
-                        onChange={e => setContactForm({...contactForm, name: e.target.value})}
-                        className="w-full bg-surface-container-lowest debossed-well rounded-lg p-4 font-data-mono text-data-mono text-on-surface focus:ring-2 focus:ring-secondary/40 outline-none border-none"
-                        placeholder="Your name"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-label-caps text-label-caps text-on-surface-variant mb-2 block">Email</label>
-                      <input
-                        type="email"
-                        required
-                        value={contactForm.email}
-                        onChange={e => setContactForm({...contactForm, email: e.target.value})}
-                        className="w-full bg-surface-container-lowest debossed-well rounded-lg p-4 font-data-mono text-data-mono text-on-surface focus:ring-2 focus:ring-secondary/40 outline-none border-none"
-                        placeholder="your@email.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-label-caps text-label-caps text-on-surface-variant mb-2 block">Message</label>
-                      <textarea
-                        required
-                        rows={4}
-                        value={contactForm.message}
-                        onChange={e => setContactForm({...contactForm, message: e.target.value})}
-                        className="w-full bg-surface-container-lowest debossed-well rounded-lg p-4 font-data-mono text-data-mono text-on-surface focus:ring-2 focus:ring-secondary/40 outline-none border-none resize-none"
-                        placeholder="Your message or feedback..."
-                      />
-                    </div>
-                    <button type="submit" className="bg-primary text-on-primary font-label-caps text-label-caps py-3 px-8 rounded-lg mechanical-btn uppercase tracking-widest">
-                      Send Message
-                    </button>
-                  </form>
                 </div>
               </div>
             </div>
