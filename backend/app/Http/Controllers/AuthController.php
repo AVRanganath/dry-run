@@ -17,18 +17,25 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        try {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+            ], 201);
+        } catch (\Throwable $e) {
+            \Log::error('Registration error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Database error during registration: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function login(Request $request)
@@ -38,20 +45,27 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        try {
+            $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+            if (!$user || !Hash::check($validated['password'], $user->password)) {
+                return response()->json([
+                    'message' => 'Invalid login credentials',
+                ], 401);
+            }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'message' => 'Invalid login credentials',
-            ], 401);
+                'user' => $user,
+                'token' => $token,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Login error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Database error during login: ' . $e->getMessage()
+            ], 500);
         }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ]);
     }
 
     public function logout(Request $request)

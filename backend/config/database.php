@@ -17,9 +17,22 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', (
-        env('DATABASE_URL') || env('DB_URL') ? 'pgsql' : 'sqlite'
-    )),
+    'default' => (function() {
+        $connection = env('DB_CONNECTION');
+        $hasRemoteUrl = env('DATABASE_URL') || env('DB_URL');
+        $hasRemoteHost = env('DB_HOST') && env('DB_HOST') !== '127.0.0.1' && env('DB_HOST') !== 'localhost';
+
+        if ($hasRemoteUrl || $hasRemoteHost) {
+            return $connection ?: 'pgsql';
+        }
+
+        if ($connection && $connection !== 'sqlite') {
+            // Only use explicit non-sqlite connection if configured properly
+            return $hasRemoteHost ? $connection : 'sqlite';
+        }
+
+        return 'sqlite';
+    })(),
 
     /*
     |--------------------------------------------------------------------------
