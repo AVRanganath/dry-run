@@ -232,3 +232,7 @@
   .scrollbar-analog::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-analog::-webkit-scrollbar-thumb { background-color: var(--color-outline-variant); border-radius: 4px; }
 }
+
+.bg-texture {
+  background-image: url("data:image/svg+xml;utf8,<svg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'><circle cx=\'2\' cy=\'2\' r=\'1\' fill=\'%23c2c8c1\' opacity=\'0.3\'/></svg>");
+}

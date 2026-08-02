@@ -29,7 +29,7 @@ export default function LoginPage() {
         }
         await register({ name, email, password, password_confirmation: confirmPassword });
       }
-      router.push('/');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     }

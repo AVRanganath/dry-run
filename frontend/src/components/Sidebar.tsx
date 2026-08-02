@@ -16,7 +16,7 @@ export default function Sidebar() {
   };
 
   const navLinks = [
-    { href: '/', icon: 'folder_open', label: 'Dossier' },
+    { href: '/dashboard', icon: 'folder_open', label: 'Dossier' },
     { href: '/setup', icon: 'work', label: 'Briefcase' },
     { href: '/sessions', icon: 'history', label: 'Sessions' },
     { href: '/reports', icon: 'assignment', label: 'Reports' },

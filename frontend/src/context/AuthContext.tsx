@@ -36,19 +36,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(storedUser);
             setIsAuthenticated(true);
           }
-          const userData = await api.getUser();
-          setUser(userData);
-          setAuthData(localStorage.getItem('auth_token') || '', userData);
-          setIsAuthenticated(true);
+          
+          try {
+            const userData = await api.getUser();
+            if (userData) {
+              setUser(userData);
+              setAuthData(localStorage.getItem('auth_token') || '', userData);
+              setIsAuthenticated(true);
+            }
+          } catch (apiError: any) {
+            // Only clear auth if the server explicitly rejected the token (401)
+            if (apiError?.message === 'Invalid credentials') {
+              clearAuthData();
+              setIsAuthenticated(false);
+              setUser(null);
+            }
+            // For network errors / server cold start, keep user logged in with cached data
+          }
         } else {
           setIsAuthenticated(false);
           setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization failed', error);
-        clearAuthData();
-        setIsAuthenticated(false);
-        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthData(res.token, res.user);
       setUser(res.user);
       setIsAuthenticated(true);
-      router.push('/');
+      router.push('/dashboard');
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthData(res.token, res.user);
       setUser(res.user);
       setIsAuthenticated(true);
-      router.push('/');
+      router.push('/dashboard');
     } finally {
       setIsLoading(false);
     }
