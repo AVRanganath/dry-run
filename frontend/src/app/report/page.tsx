@@ -50,33 +50,52 @@ function ReportClient() {
     );
   }
 
-  const overallScore = session.overall_score || 0;
+  const rawScore = session.overall_score;
+  const overallScore = typeof rawScore === 'number' ? rawScore : (parseFloat(rawScore) || 0);
   const isPassed = overallScore >= 6;
-  const dateFiled = new Date(session.created_at).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  }).toUpperCase();
+  
+  const dateFiled = session.created_at
+    ? new Date(session.created_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }).toUpperCase()
+    : 'N/A';
 
-  // Extract strengths and improvements from answers (deduplicated)
+  // Extract strengths and improvements from answers (deduplicated & type-safe)
   const strengthsMap = new Map<string, any>();
   const improvementsMap = new Map<string, any>();
   
   session.questions?.forEach((q: any) => {
-    if (q.answer) {
-      if (q.answer.strengths && Array.isArray(q.answer.strengths)) {
-        q.answer.strengths.forEach((s: string) => {
-          const key = s.toLowerCase().trim();
-          if (!strengthsMap.has(key)) {
-            strengthsMap.set(key, { title: 'Observed Strength', detail: s });
+    if (q && q.answer) {
+      let rawStrengths = q.answer.strengths;
+      if (typeof rawStrengths === 'string') {
+        try { rawStrengths = JSON.parse(rawStrengths); } catch { rawStrengths = [rawStrengths]; }
+      }
+      if (Array.isArray(rawStrengths)) {
+        rawStrengths.forEach((s: any) => {
+          const detail = typeof s === 'string' ? s : (s?.detail || s?.strength || (s ? String(s) : ''));
+          if (detail && typeof detail === 'string' && detail.trim().length > 0) {
+            const key = detail.toLowerCase().trim();
+            if (!strengthsMap.has(key)) {
+              strengthsMap.set(key, { title: 'Observed Strength', detail: detail.trim() });
+            }
           }
         });
       }
-      if (q.answer.improvements && Array.isArray(q.answer.improvements)) {
-        q.answer.improvements.forEach((i: string) => {
-          const key = i.toLowerCase().trim();
-          if (!improvementsMap.has(key)) {
-            improvementsMap.set(key, { title: 'Area for Refinement', detail: i });
+
+      let rawImprovements = q.answer.improvements;
+      if (typeof rawImprovements === 'string') {
+        try { rawImprovements = JSON.parse(rawImprovements); } catch { rawImprovements = [rawImprovements]; }
+      }
+      if (Array.isArray(rawImprovements)) {
+        rawImprovements.forEach((i: any) => {
+          const detail = typeof i === 'string' ? i : (i?.detail || i?.improvement || (i ? String(i) : ''));
+          if (detail && typeof detail === 'string' && detail.trim().length > 0) {
+            const key = detail.toLowerCase().trim();
+            if (!improvementsMap.has(key)) {
+              improvementsMap.set(key, { title: 'Area for Refinement', detail: detail.trim() });
+            }
           }
         });
       }
@@ -86,17 +105,16 @@ function ReportClient() {
   const strengths = Array.from(strengthsMap.values());
   const improvements = Array.from(improvementsMap.values());
 
-  // Since Gemini only returns a single score out of 10, we'll derive the breakdown metrics
-  // from the overall score so the UI still looks complete and data-rich.
   const baseScore = overallScore;
-  const avgClarity = Math.min(10, baseScore + (baseScore < 8 ? 1.5 : 0.5));
-  const avgRelevance = baseScore;
-  const avgStar = Math.max(0, baseScore - (baseScore > 5 ? 1.0 : 0.5));
+  const avgClarity = Math.min(10, Math.max(0, baseScore + (baseScore < 8 ? 1.5 : 0.5)));
+  const avgRelevance = Math.min(10, Math.max(0, baseScore));
+  const avgStar = Math.max(0, Math.min(10, baseScore - (baseScore > 5 ? 1.0 : 0.5)));
 
   const renderMetricBar = (score: number, max: number = 10, colorClass: string) => {
-    const fullBlocks = Math.floor(score);
-    const hasHalf = score - fullBlocks >= 0.5;
-    const emptyBlocks = max - fullBlocks - (hasHalf ? 1 : 0);
+    const clampedScore = Math.max(0, Math.min(max, score));
+    const fullBlocks = Math.floor(clampedScore);
+    const hasHalf = (clampedScore - fullBlocks) >= 0.5;
+    const emptyBlocks = Math.max(0, max - fullBlocks - (hasHalf ? 1 : 0));
     
     return (
       <div className="w-full h-8 bg-surface-container-high rounded-sm shadow-debossed p-1 flex space-x-[2px]">

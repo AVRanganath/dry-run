@@ -15,6 +15,10 @@ class InterviewSession extends Model
         'overall_score'
     ];
 
+    protected $casts = [
+        'overall_score' => 'float',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
