@@ -58,7 +58,7 @@ function InterviewClient() {
     try {
       await api.submitAnswer(questionId, { answer_text: answerText });
       
-      setFeedbackToast('Response submitted successfully');
+      setFeedbackToast('Response submitted');
       setAnswerText('');
       
       setTimeout(() => {
@@ -69,7 +69,7 @@ function InterviewClient() {
           router.push(`/report?session=${sessionId}`);
         }
         setIsSubmitting(false);
-      }, 1200);
+      }, 300);
 
     } catch (err: any) {
       setSubmitError(err.message || 'Failed to submit answer. Please try again.');
