@@ -31,11 +31,11 @@ function InterviewClient() {
         setSession(data);
         setQuestions(data.questions || []);
         
-        // Find the first unanswered question
-        const nextUnansweredIdx = data.questions?.findIndex((q: any) => !q.answer_text);
-        if (nextUnansweredIdx !== -1) {
+        // Find the first unanswered question (backend returns relation q.answer)
+        const nextUnansweredIdx = data.questions?.findIndex((q: any) => !q.answer && !q.answer_text);
+        if (nextUnansweredIdx !== -1 && nextUnansweredIdx !== undefined) {
           setCurrentIdx(nextUnansweredIdx);
-        } else {
+        } else if (data.questions && data.questions.length > 0) {
           // All answered
           router.push(`/report?session=${sessionId}`);
         }

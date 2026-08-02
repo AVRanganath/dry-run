@@ -24,6 +24,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Set the user's email always in lower case and trimmed.
+     */
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower(trim($value));
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

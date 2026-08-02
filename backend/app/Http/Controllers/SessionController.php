@@ -32,12 +32,21 @@ class SessionController extends Controller
         ]);
 
         $generatedQuestions = $geminiService->generateQuestions($session->job_description, $session->resume_text);
+        if (empty($generatedQuestions) || !is_array($generatedQuestions)) {
+            $generatedQuestions = [
+                ['question' => 'Can you walk me through your background and how it aligns with this role?', 'category' => 'Experience'],
+                ['question' => 'Describe a complex challenge you encountered in a recent project and how you resolved it.', 'category' => 'Experience'],
+                ['question' => 'How do you prioritize competing deadlines and manage high-pressure situations?', 'category' => 'Behavioral'],
+                ['question' => 'What technical methodologies or architectures are you most proficient with?', 'category' => 'Technical'],
+                ['question' => 'Why are you specifically interested in this opportunity and company?', 'category' => 'Behavioral'],
+            ];
+        }
 
         foreach ($generatedQuestions as $index => $q) {
             Question::create([
                 'session_id' => $session->id,
-                'question_text' => $q['question'],
-                'category' => $q['category'],
+                'question_text' => $q['question'] ?? 'Please describe your relevant experience.',
+                'category' => $q['category'] ?? 'General',
                 'order' => $index + 1,
             ]);
         }
@@ -60,13 +69,17 @@ class SessionController extends Controller
         
         $completedSessions = (clone $userSessions)->where('status', 'completed')->count();
         
-        // Let's get category breakdowns from answers -> questions
+        // Category breakdowns from answers -> questions
         $categoryScores = \DB::table('answers')
             ->join('questions', 'answers.question_id', '=', 'questions.id')
             ->join('interview_sessions', 'questions.session_id', '=', 'interview_sessions.id')
             ->where('interview_sessions.user_id', $request->user()->id)
-            ->select('questions.category', \DB::raw('AVG(answers.score) as average_score'))
-            ->groupBy('questions.category')
+            ->whereNotNull('answers.score')
+            ->select(
+                \DB::raw("COALESCE(questions.category, 'General') as category"),
+                \DB::raw('ROUND(AVG(answers.score)::numeric, 2) as average_score')
+            )
+            ->groupBy(\DB::raw("COALESCE(questions.category, 'General')"))
             ->get();
 
         return response()->json([
