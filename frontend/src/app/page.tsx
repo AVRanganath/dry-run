@@ -21,9 +21,11 @@ const staggerContainer: Variants = {
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuth();
-  const primaryRoute = isAuthenticated ? '/dashboard' : '/login';
-  const navLabel = isAuthenticated ? 'Open Dossier' : 'Access Terminal';
-  const ctaLabel = isAuthenticated ? 'Continue to Dossier' : 'Initiate Simulation';
+  const navRoute = isAuthenticated ? '/dashboard' : '/login';
+  const navLabel = isAuthenticated ? 'View Dossier' : 'Access Terminal';
+  
+  const heroRoute = isAuthenticated ? '/setup' : '/login';
+  const heroLabel = 'Initiate Simulation';
 
   return (
     <div className="min-h-screen bg-texture bg-background text-on-surface flex flex-col font-body-md relative selection:bg-primary selection:text-on-primary overflow-x-hidden">
@@ -42,7 +44,7 @@ export default function LandingPage() {
           <h1 className="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">Dry Run</h1>
         </div>
         <div className="flex space-x-4 items-center">
-          <Link href={primaryRoute} className="bg-primary text-on-primary font-label-caps text-label-caps py-2 px-6 rounded-lg uppercase tracking-widest mechanical-btn hover:translate-y-[1px] transition-transform">
+          <Link href={navRoute} className="bg-primary text-on-primary font-label-caps text-label-caps py-2 px-6 rounded-lg uppercase tracking-widest mechanical-btn hover:translate-y-[1px] transition-transform">
             {navLabel}
           </Link>
         </div>
@@ -78,9 +80,9 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Link href={primaryRoute} className="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-8 rounded-lg uppercase tracking-widest flex items-center justify-center space-x-3 mechanical-btn hover:translate-y-[1px] transition-transform w-fit group">
+              <Link href={heroRoute} className="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-8 rounded-lg uppercase tracking-widest flex items-center justify-center space-x-3 mechanical-btn hover:translate-y-[1px] transition-transform w-fit group">
                 <span className="material-symbols-outlined group-hover:animate-pulse">terminal</span>
-                <span>{ctaLabel}</span>
+                <span>{heroLabel}</span>
               </Link>
             </motion.div>
           </motion.div>
@@ -243,7 +245,7 @@ export default function LandingPage() {
         <footer className="w-full py-12 px-gutter bg-surface">
           <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-center items-center gap-6">
             <div className="font-data-mono text-[12px] text-on-surface-variant opacity-60">
-              © {new Date().getFullYear()} A V Ranganath. All systems secure.
+              © {new Date().getFullYear()} A V Ranganath.
             </div>
           </div>
         </footer>
