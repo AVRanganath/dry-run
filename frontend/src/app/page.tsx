@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -19,6 +20,11 @@ const staggerContainer: Variants = {
 };
 
 export default function LandingPage() {
+  const { isAuthenticated } = useAuth();
+  const primaryRoute = isAuthenticated ? '/dashboard' : '/login';
+  const navLabel = isAuthenticated ? 'Open Dossier' : 'Access Terminal';
+  const ctaLabel = isAuthenticated ? 'Continue to Dossier' : 'Initiate Simulation';
+
   return (
     <div className="min-h-screen bg-texture bg-background text-on-surface flex flex-col font-body-md relative selection:bg-primary selection:text-on-primary overflow-x-hidden">
       
@@ -36,8 +42,8 @@ export default function LandingPage() {
           <h1 className="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">Dry Run</h1>
         </div>
         <div className="flex space-x-4 items-center">
-          <Link href="/login" className="bg-primary text-on-primary font-label-caps text-label-caps py-2 px-6 rounded-lg uppercase tracking-widest mechanical-btn hover:translate-y-[1px] transition-transform">
-            Access Terminal
+          <Link href={primaryRoute} className="bg-primary text-on-primary font-label-caps text-label-caps py-2 px-6 rounded-lg uppercase tracking-widest mechanical-btn hover:translate-y-[1px] transition-transform">
+            {navLabel}
           </Link>
         </div>
       </motion.nav>
@@ -72,9 +78,9 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Link href="/login" className="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-8 rounded-lg uppercase tracking-widest flex items-center justify-center space-x-3 mechanical-btn hover:translate-y-[1px] transition-transform w-fit group">
+              <Link href={primaryRoute} className="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-8 rounded-lg uppercase tracking-widest flex items-center justify-center space-x-3 mechanical-btn hover:translate-y-[1px] transition-transform w-fit group">
                 <span className="material-symbols-outlined group-hover:animate-pulse">terminal</span>
-                <span>Initiate Simulation</span>
+                <span>{ctaLabel}</span>
               </Link>
             </motion.div>
           </motion.div>
