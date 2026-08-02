@@ -82,7 +82,21 @@ function InterviewClient() {
   }
 
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center bg-surface text-error font-data-mono">{error}</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface text-on-surface p-6 font-body-md">
+        <div className="bg-surface-container-lowest p-8 rounded-xl shadow-embossed border border-outline-variant/30 max-w-md w-full text-center space-y-4">
+          <span className="material-symbols-outlined text-error text-4xl">warning</span>
+          <h2 className="font-headline-md text-headline-md text-primary">Session Notice</h2>
+          <p className="font-body-md text-on-surface-variant">{error}</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="w-full bg-primary text-on-primary py-3 rounded-lg font-label-caps uppercase tracking-widest text-label-caps shadow-embossed hover:shadow-mechanical-button transition-all"
+          >
+            Return to Dossier
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const currentQuestion = questions[currentIdx];

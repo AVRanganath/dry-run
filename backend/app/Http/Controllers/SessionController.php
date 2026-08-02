@@ -57,7 +57,17 @@ class SessionController extends Controller
 
     public function show(Request $request, $id)
     {
-        $session = $request->user()->interviewSessions()->with(['questions.answer'])->findOrFail($id);
+        $session = InterviewSession::with(['questions.answer'])->findOrFail($id);
+
+        if (empty($session->user_id)) {
+            $session->user_id = $request->user()->id;
+            $session->save();
+        } elseif ((int)$session->user_id !== (int)$request->user()->id) {
+            return response()->json([
+                'message' => 'You do not have permission to view this interview session.'
+            ], 403);
+        }
+
         return response()->json($session);
     }
 

@@ -16,12 +16,21 @@ class QuestionController extends Controller
         ]);
 
         $question = Question::with('session')->findOrFail($id);
-        
-        if ($question->session->user_id !== $request->user()->id) {
-            abort(403, 'Unauthorized');
-        }
-        
         $session = $question->session;
+        
+        if (!$session) {
+            return response()->json(['message' => 'Session not found for this question.'], 404);
+        }
+
+        // Auto-assign session to current user if session was unassigned
+        if (empty($session->user_id)) {
+            $session->user_id = $request->user()->id;
+            $session->save();
+        } elseif ((int)$session->user_id !== (int)$request->user()->id) {
+            return response()->json([
+                'message' => 'You do not have permission to answer questions for this interview session.'
+            ], 403);
+        }
         
         // Ensure session is set to in_progress if it was pending
         if ($session->status === 'pending') {
@@ -43,14 +52,16 @@ class QuestionController extends Controller
             ], $statusCode);
         }
 
-        $answer = Answer::create([
-            'question_id' => $question->id,
-            'answer_text' => $validated['answer_text'],
-            'score' => $evaluation['score'] ?? null,
-            'feedback' => $evaluation['feedback'] ?? null,
-            'strengths' => $evaluation['strengths'] ?? [],
-            'improvements' => $evaluation['improvements'] ?? []
-        ]);
+        $answer = Answer::updateOrCreate(
+            ['question_id' => $question->id],
+            [
+                'answer_text' => $validated['answer_text'],
+                'score' => $evaluation['score'] ?? null,
+                'feedback' => $evaluation['feedback'] ?? null,
+                'strengths' => $evaluation['strengths'] ?? [],
+                'improvements' => $evaluation['improvements'] ?? []
+            ]
+        );
 
         // Check if all questions are answered
         $totalQuestions = $session->questions()->count();
