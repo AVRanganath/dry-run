@@ -7,14 +7,11 @@ use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     private $apiKey;
-    private $model;
-    private $endpoint;
+    private $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
 
     public function __construct()
     {
         $this->apiKey = env('GEMINI_API_KEY');
-        $this->model = env('GEMINI_MODEL', 'gemini-2.0-flash');
-        $this->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
     }
 
     public function generateQuestions(string $jobDescription, string $resumeText): array

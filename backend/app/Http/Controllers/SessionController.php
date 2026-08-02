@@ -75,12 +75,15 @@ class SessionController extends Controller
             ->join('interview_sessions', 'questions.session_id', '=', 'interview_sessions.id')
             ->where('interview_sessions.user_id', $request->user()->id)
             ->whereNotNull('answers.score')
-            ->select(
-                \DB::raw("COALESCE(questions.category, 'General') as category"),
-                \DB::raw('ROUND(AVG(answers.score)::numeric, 2) as average_score')
-            )
-            ->groupBy(\DB::raw("COALESCE(questions.category, 'General')"))
-            ->get();
+            ->select('questions.category', \DB::raw('AVG(answers.score) as average_score'))
+            ->groupBy('questions.category')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'category' => $row->category ?: 'General',
+                    'average_score' => round((float) $row->average_score, 2),
+                ];
+            });
 
         return response()->json([
             'total_sessions' => $totalSessions,
