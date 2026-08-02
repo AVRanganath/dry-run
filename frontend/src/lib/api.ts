@@ -86,13 +86,8 @@ export function clearAuthData() {
 
 export function getStoredUser(): any | null {
   if (typeof window === 'undefined') return null;
-  try {
-    const u = localStorage.getItem('user');
-    return u ? JSON.parse(u) : null;
-  } catch {
-    localStorage.removeItem('user');
-    return null;
-  }
+  const u = localStorage.getItem('user');
+  return u ? JSON.parse(u) : null;
 }
 
 export function isAuthenticated(): boolean {

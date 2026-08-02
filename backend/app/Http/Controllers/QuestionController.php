@@ -35,31 +35,28 @@ class QuestionController extends Controller
             $validated['answer_text']
         );
 
-        $answer = Answer::updateOrCreate(
-            ['question_id' => $question->id],
-            [
-                'answer_text' => $validated['answer_text'],
-                'score' => $evaluation['score'] ?? null,
-                'feedback' => $evaluation['feedback'] ?? null,
-                'strengths' => $evaluation['strengths'] ?? [],
-                'improvements' => $evaluation['improvements'] ?? []
-            ]
-        );
+        $answer = Answer::create([
+            'question_id' => $question->id,
+            'answer_text' => $validated['answer_text'],
+            'score' => $evaluation['score'] ?? null,
+            'feedback' => $evaluation['feedback'] ?? null,
+            'strengths' => $evaluation['strengths'] ?? [],
+            'improvements' => $evaluation['improvements'] ?? []
+        ]);
 
-        // Check if all questions in this session have an answer
+        // Check if all questions are answered
         $totalQuestions = $session->questions()->count();
-        $answeredQuestions = $session->questions()->has('answer')->count();
+        $answeredQuestions = Answer::whereIn('question_id', $session->questions()->pluck('id'))->count();
 
-        if ($totalQuestions > 0 && $totalQuestions === $answeredQuestions) {
+        if ($totalQuestions === $answeredQuestions) {
             $session->status = 'completed';
             
-            // Calculate overall average score across all answered questions
-            $questionIds = $session->questions()->pluck('id');
-            $avgScore = Answer::whereIn('question_id', $questionIds)->whereNotNull('score')->avg('score');
+            // Calculate overall score
+            $avgScore = Answer::whereIn('question_id', $session->questions()->pluck('id'))->avg('score');
             $session->overall_score = $avgScore ? round($avgScore, 2) : null;
             $session->save();
         }
 
-        return response()->json($answer, 200);
+        return response()->json($answer, 201);
     }
 }

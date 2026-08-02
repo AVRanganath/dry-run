@@ -33,10 +33,11 @@ class GeminiService
 
         try {
             $text = $this->extractTextFromResponse($response);
-            $questions = $this->extractJsonArray($text);
+            $text = $this->cleanJsonResponse($text);
+            $questions = json_decode($text, true);
             
-            if (!is_array($questions) || empty($questions)) {
-                Log::error('Gemini JSON decode error in generateQuestions. Raw text: ' . $text);
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($questions)) {
+                Log::error('Gemini JSON decode error in generateQuestions: ' . json_last_error_msg() . ' Text: ' . $text);
                 return $this->getMockQuestions();
             }
 
@@ -67,23 +68,15 @@ class GeminiService
 
         try {
             $text = $this->extractTextFromResponse($response);
-            $evaluation = $this->extractJsonObject($text);
+            $text = $this->cleanJsonResponse($text);
+            $evaluation = json_decode($text, true);
 
-            if (!is_array($evaluation) || empty($evaluation)) {
-                Log::error('Gemini JSON decode error in evaluateAnswer. Raw text: ' . $text);
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($evaluation)) {
+                Log::error('Gemini JSON decode error in evaluateAnswer: ' . json_last_error_msg() . ' Text: ' . $text);
                 return $this->getMockEvaluation();
             }
 
-            // Ensure safe types
-            $score = isset($evaluation['score']) ? (int) $evaluation['score'] : 7;
-            $score = max(1, min(10, $score));
-
-            return [
-                'score' => $score,
-                'feedback' => (string) ($evaluation['feedback'] ?? 'Solid response.'),
-                'strengths' => is_array($evaluation['strengths'] ?? null) ? $evaluation['strengths'] : ['Clear communication'],
-                'improvements' => is_array($evaluation['improvements'] ?? null) ? $evaluation['improvements'] : ['Add specific metrics']
-            ];
+            return $evaluation;
         } catch (\Exception $e) {
             Log::error('Gemini processing error in evaluateAnswer: ' . $e->getMessage());
             return $this->getMockEvaluation();
@@ -110,7 +103,6 @@ class GeminiService
                 'method'  => 'POST',
                 'content' => json_encode($data),
                 'ignore_errors' => true,
-                'timeout' => 30
             ]
         ];
 
@@ -133,40 +125,15 @@ class GeminiService
         if (isset($response['candidates'][0]['content']['parts'][0]['text'])) {
             return $response['candidates'][0]['content']['parts'][0]['text'];
         }
-        if (isset($response['error'])) {
-            Log::error('Gemini API error payload: ' . json_encode($response['error']));
-        }
         throw new \Exception("Invalid response format from Gemini API");
     }
 
-    private function extractJsonArray(string $text): ?array
+    private function cleanJsonResponse(string $text): string
     {
-        $cleaned = preg_replace('/^```(?:json)?/m', '', $text);
-        $cleaned = preg_replace('/```$/m', '', $cleaned);
-        $cleaned = trim($cleaned);
-
-        if (preg_match('/\[.*\]/s', $cleaned, $matches)) {
-            $decoded = json_decode($matches[0], true);
-            if (is_array($decoded)) return $decoded;
-        }
-
-        $decoded = json_decode($cleaned, true);
-        return is_array($decoded) ? $decoded : null;
-    }
-
-    private function extractJsonObject(string $text): ?array
-    {
-        $cleaned = preg_replace('/^```(?:json)?/m', '', $text);
-        $cleaned = preg_replace('/```$/m', '', $cleaned);
-        $cleaned = trim($cleaned);
-
-        if (preg_match('/\{.*\}/s', $cleaned, $matches)) {
-            $decoded = json_decode($matches[0], true);
-            if (is_array($decoded)) return $decoded;
-        }
-
-        $decoded = json_decode($cleaned, true);
-        return is_array($decoded) ? $decoded : null;
+        // Remove markdown formatting if present
+        $text = preg_replace('/```json\s*/', '', $text);
+        $text = preg_replace('/```\s*/', '', $text);
+        return trim($text);
     }
 
     private function getMockQuestions(): array
