@@ -31,15 +31,24 @@ class SessionController extends Controller
             'status' => 'pending',
         ]);
 
-        $generatedQuestions = $geminiService->generateQuestions($session->job_description, $session->resume_text);
+        try {
+            $generatedQuestions = $geminiService->generateQuestions($session->job_description, $session->resume_text);
 
-        foreach ($generatedQuestions as $index => $q) {
-            Question::create([
-                'session_id' => $session->id,
-                'question_text' => $q['question'],
-                'category' => $q['category'],
-                'order' => $index + 1,
-            ]);
+            foreach ($generatedQuestions as $index => $q) {
+                Question::create([
+                    'session_id' => $session->id,
+                    'question_text' => $q['question'],
+                    'category' => $q['category'] ?? 'General',
+                    'order' => $index + 1,
+                ]);
+            }
+        } catch (\Exception $e) {
+            $session->delete();
+            $code = $e->getCode();
+            $statusCode = ($code >= 400 && $code < 600) ? $code : 429;
+            return response()->json([
+                'message' => $e->getMessage()
+            ], $statusCode);
         }
 
         $session->load('questions');

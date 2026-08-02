@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     private $apiKey;
-    private $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
+    private $model;
+    private $endpoint;
 
     public function __construct()
     {
         $this->apiKey = env('GEMINI_API_KEY');
+        $this->model = env('GEMINI_MODEL', 'gemini-2.0-flash');
+        $this->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
     }
 
     public function generateQuestions(string $jobDescription, string $resumeText): array
@@ -27,25 +30,16 @@ class GeminiService
 
         $response = $this->callGeminiApi($prompt);
 
-        if (!$response) {
-            return $this->getMockQuestions();
+        $text = $this->extractTextFromResponse($response);
+        $text = $this->cleanJsonResponse($text);
+        $questions = json_decode($text, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($questions)) {
+            Log::error('Gemini JSON decode error in generateQuestions: ' . json_last_error_msg() . ' Text: ' . $text);
+            throw new \Exception('Failed to process AI response for questions. Please try again.', 500);
         }
 
-        try {
-            $text = $this->extractTextFromResponse($response);
-            $text = $this->cleanJsonResponse($text);
-            $questions = json_decode($text, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE || !is_array($questions)) {
-                Log::error('Gemini JSON decode error in generateQuestions: ' . json_last_error_msg() . ' Text: ' . $text);
-                return $this->getMockQuestions();
-            }
-
-            return $questions;
-        } catch (\Exception $e) {
-            Log::error('Gemini processing error in generateQuestions: ' . $e->getMessage());
-            return $this->getMockQuestions();
-        }
+        return $questions;
     }
 
     public function evaluateAnswer(string $jobDescription, string $questionText, string $answerText): array
@@ -62,28 +56,19 @@ class GeminiService
 
         $response = $this->callGeminiApi($prompt);
 
-        if (!$response) {
-            return $this->getMockEvaluation($answerText, $questionText);
+        $text = $this->extractTextFromResponse($response);
+        $text = $this->cleanJsonResponse($text);
+        $evaluation = json_decode($text, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($evaluation)) {
+            Log::error('Gemini JSON decode error in evaluateAnswer: ' . json_last_error_msg() . ' Text: ' . $text);
+            throw new \Exception('Failed to process AI response for evaluation. Please try again.', 500);
         }
 
-        try {
-            $text = $this->extractTextFromResponse($response);
-            $text = $this->cleanJsonResponse($text);
-            $evaluation = json_decode($text, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE || !is_array($evaluation)) {
-                Log::error('Gemini JSON decode error in evaluateAnswer: ' . json_last_error_msg() . ' Text: ' . $text);
-                return $this->getMockEvaluation($answerText, $questionText);
-            }
-
-            return $evaluation;
-        } catch (\Exception $e) {
-            Log::error('Gemini processing error in evaluateAnswer: ' . $e->getMessage());
-            return $this->getMockEvaluation($answerText, $questionText);
-        }
+        return $evaluation;
     }
 
-    private function callGeminiApi(string $prompt)
+    private function callGeminiApi(string $prompt): array
     {
         $data = [
             'contents' => [
@@ -103,22 +88,36 @@ class GeminiService
                 'method'  => 'POST',
                 'content' => json_encode($data),
                 'ignore_errors' => true,
-                'timeout' => 15,
+                'timeout' => 20,
             ]
         ];
 
         $context  = stream_context_create($options);
         
-        try {
-            $result = file_get_contents($url, false, $context);
-            if ($result === false) {
-                return null;
-            }
-            return json_decode($result, true);
-        } catch (\Exception $e) {
-            Log::error('Gemini API call failed: ' . $e->getMessage());
-            return null;
+        $result = @file_get_contents($url, false, $context);
+        if ($result === false) {
+            throw new \Exception('Unable to reach AI evaluation service. Please check your connection and retry.', 503);
         }
+
+        $decoded = json_decode($result, true);
+        if (isset($decoded['error'])) {
+            $errorCode = $decoded['error']['code'] ?? 500;
+            $errorMsg = $decoded['error']['message'] ?? 'AI service error';
+            
+            if ($errorCode === 429 || stripos($errorMsg, 'quota') !== false || stripos($errorMsg, 'rate') !== false || stripos($errorMsg, 'exhausted') !== false) {
+                throw new \Exception('AI rate limit / quota exceeded. Please wait a moment before trying again.', 429);
+            }
+            if ($errorCode === 503 || $errorCode === 500) {
+                throw new \Exception('AI service is temporarily busy. Please wait a few seconds and try again.', 503);
+            }
+            throw new \Exception("AI Service Error: {$errorMsg}", $errorCode >= 400 && $errorCode < 600 ? $errorCode : 500);
+        }
+
+        if (!is_array($decoded)) {
+            throw new \Exception('Invalid response received from AI service.', 502);
+        }
+
+        return $decoded;
     }
 
     private function extractTextFromResponse(array $response): string
@@ -126,7 +125,7 @@ class GeminiService
         if (isset($response['candidates'][0]['content']['parts'][0]['text'])) {
             return $response['candidates'][0]['content']['parts'][0]['text'];
         }
-        throw new \Exception("Invalid response format from Gemini API");
+        throw new \Exception("Invalid response structure from Gemini API");
     }
 
     private function cleanJsonResponse(string $text): string

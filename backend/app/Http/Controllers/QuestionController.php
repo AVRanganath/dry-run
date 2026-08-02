@@ -29,11 +29,19 @@ class QuestionController extends Controller
             $session->save();
         }
 
-        $evaluation = $geminiService->evaluateAnswer(
-            $session->job_description,
-            $question->question_text,
-            $validated['answer_text']
-        );
+        try {
+            $evaluation = $geminiService->evaluateAnswer(
+                $session->job_description,
+                $question->question_text,
+                $validated['answer_text']
+            );
+        } catch (\Exception $e) {
+            $code = $e->getCode();
+            $statusCode = ($code >= 400 && $code < 600) ? $code : 429;
+            return response()->json([
+                'message' => $e->getMessage()
+            ], $statusCode);
+        }
 
         $answer = Answer::create([
             'question_id' => $question->id,

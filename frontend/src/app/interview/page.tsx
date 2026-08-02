@@ -18,6 +18,7 @@ function InterviewClient() {
   const [feedbackToast, setFeedbackToast] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     if (!sessionId) {
@@ -32,10 +33,10 @@ function InterviewClient() {
         setQuestions(data.questions || []);
         
         // Find the first unanswered question
-        const nextUnansweredIdx = data.questions?.findIndex((q: any) => !q.answer_text);
-        if (nextUnansweredIdx !== -1) {
+        const nextUnansweredIdx = data.questions?.findIndex((q: any) => !q.answer && !q.answer_text);
+        if (nextUnansweredIdx !== -1 && nextUnansweredIdx !== undefined) {
           setCurrentIdx(nextUnansweredIdx);
-        } else {
+        } else if (data.questions && data.questions.length > 0 && data.questions.every((q: any) => q.answer || q.answer_text)) {
           // All answered
           router.push(`/report?session=${sessionId}`);
         }
@@ -52,6 +53,7 @@ function InterviewClient() {
 
     const questionId = questions[currentIdx].id;
     setIsSubmitting(true);
+    setSubmitError('');
     
     try {
       await api.submitAnswer(questionId, { answer_text: answerText });
@@ -67,20 +69,20 @@ function InterviewClient() {
           router.push(`/report?session=${sessionId}`);
         }
         setIsSubmitting(false);
-      }, 1500);
+      }, 1200);
 
     } catch (err: any) {
-      setError(err.message || 'Failed to submit answer');
+      setSubmitError(err.message || 'Failed to submit answer. Please try again.');
       setIsSubmitting(false);
     }
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-surface text-on-surface">Loading session data...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-surface text-on-surface font-data-mono">Loading session data...</div>;
   }
 
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center bg-surface text-error">{error}</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-surface text-error font-data-mono">{error}</div>;
   }
 
   const currentQuestion = questions[currentIdx];
@@ -128,23 +130,43 @@ function InterviewClient() {
         </div>
 
         {/* Controls Area */}
-        <div className="flex flex-col items-center gap-10 w-full">
+        <div className="flex flex-col items-center gap-6 w-full">
           {/* Text Input Area */}
           <div className="w-full max-w-2xl transition-opacity duration-500 opacity-100">
+            {submitError && (
+              <div className="w-full bg-error-container text-on-error-container p-4 rounded-lg mb-4 text-sm font-data-mono flex items-center justify-between border border-error/30 shadow-sm animate-fade-in">
+                <div className="flex items-center space-x-2">
+                  <span className="material-symbols-outlined text-base text-error">hourglass_top</span>
+                  <span>{submitError}</span>
+                </div>
+                <button 
+                  onClick={() => setSubmitError('')} 
+                  className="text-on-error-container hover:opacity-75 font-bold ml-2"
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <textarea 
               className="w-full h-40 bg-surface-container shadow-debossed border-none rounded-lg p-6 font-body-lg text-body-lg text-on-surface focus:ring-1 focus:ring-primary focus:outline-none resize-none placeholder-outline-variant/60 scrollbar-analog" 
               placeholder="Type your response here..."
               value={answerText}
-              onChange={(e) => setAnswerText(e.target.value)}
+              onChange={(e) => {
+                setAnswerText(e.target.value);
+                if (submitError) setSubmitError('');
+              }}
               disabled={isSubmitting}
             ></textarea>
             <div className="flex justify-end mt-4">
               <button 
                 onClick={handleSubmit}
                 disabled={isSubmitting || !answerText.trim()}
-                className="bg-primary text-on-primary px-8 py-3 rounded-lg shadow-embossed hover:shadow-mechanical-button active:shadow-debossed transform transition-all active:translate-y-1 font-label-caps text-label-caps tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-on-primary px-8 py-3 rounded-lg shadow-embossed hover:shadow-mechanical-button active:shadow-debossed transform transition-all active:translate-y-1 font-label-caps text-label-caps tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Answer'}
+                {isSubmitting && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                <span>{isSubmitting ? 'Evaluating...' : 'Submit Answer'}</span>
               </button>
             </div>
           </div>
