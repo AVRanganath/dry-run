@@ -29,6 +29,7 @@ export default function Dashboard() {
   }, []);
 
   const totalSessions = analytics?.total_sessions || 0;
+  const completedSessions = analytics?.completed_sessions || 0;
   const avgScore = analytics?.average_score ? Math.round(analytics.average_score * 10) : 0; // Convert 10 scale to 100 scale for UI
 
   // Helper for rendering tally marks
@@ -159,7 +160,7 @@ export default function Dashboard() {
                   <div className="debossed-well bg-surface-container-highest p-6 rounded-sm mb-6 min-h-[160px]">
                     <div className="font-label-caps text-label-caps text-on-surface-variant mb-4 border-b border-outline-variant/30 pb-2">Sessions Completed</div>
                     <div className="flex flex-wrap gap-x-6 gap-y-4 pt-2">
-                      {renderTallies(totalSessions)}
+                      {renderTallies(completedSessions)}
                     </div>
                   </div>
                   <div className="flex justify-between items-end border-t border-dashed border-outline-variant/50 pt-4">
@@ -174,7 +175,11 @@ export default function Dashboard() {
                   {sessions.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 pt-4">
                       {sessions.slice(0, 3).map((session, idx) => (
-                        <Link href={`/report?session=${session.id}`} key={session.id} className={`relative h-64 cursor-pointer group ${idx === 2 ? 'hidden md:block' : ''}`}>
+                        <Link 
+                          href={session.status === 'completed' ? `/report?session=${session.id}` : `/interview?session=${session.id}`} 
+                          key={session.id} 
+                          className={`relative h-64 cursor-pointer group ${idx === 2 ? 'hidden md:block' : ''}`}
+                        >
                           <div className={`absolute inset-0 bg-surface-container-highest border border-outline-variant/50 rounded-sm shadow-sm transition-transform ${getCardClasses(idx)}`}></div>
                           <div className={`absolute inset-0 bg-surface-container-low border border-outline-variant/50 rounded-sm shadow-sm transition-transform ${getCardShadowClasses(idx)}`}></div>
                           <div className={`absolute inset-0 bg-surface border border-outline-variant/60 rounded-sm embossed-card border-t-[6px] ${getBorderColor(idx)} flex flex-col p-6 transition-transform group-hover:-translate-y-2 group-hover:shadow-[4px_8px_15px_rgba(0,0,0,0.1)]`}>
