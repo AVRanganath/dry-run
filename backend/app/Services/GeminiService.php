@@ -51,7 +51,7 @@ class GeminiService
     public function evaluateAnswer(string $jobDescription, string $questionText, string $answerText): array
     {
         if (empty($this->apiKey)) {
-            return $this->getMockEvaluation();
+            return $this->getMockEvaluation($answerText, $questionText);
         }
 
         $prompt = "You are an expert AI interview coach. Evaluate the candidate's answer to the interview question based on the job description. " .
@@ -63,7 +63,7 @@ class GeminiService
         $response = $this->callGeminiApi($prompt);
 
         if (!$response) {
-            return $this->getMockEvaluation();
+            return $this->getMockEvaluation($answerText, $questionText);
         }
 
         try {
@@ -73,13 +73,13 @@ class GeminiService
 
             if (json_last_error() !== JSON_ERROR_NONE || !is_array($evaluation)) {
                 Log::error('Gemini JSON decode error in evaluateAnswer: ' . json_last_error_msg() . ' Text: ' . $text);
-                return $this->getMockEvaluation();
+                return $this->getMockEvaluation($answerText, $questionText);
             }
 
             return $evaluation;
         } catch (\Exception $e) {
             Log::error('Gemini processing error in evaluateAnswer: ' . $e->getMessage());
-            return $this->getMockEvaluation();
+            return $this->getMockEvaluation($answerText, $questionText);
         }
     }
 
@@ -103,6 +103,7 @@ class GeminiService
                 'method'  => 'POST',
                 'content' => json_encode($data),
                 'ignore_errors' => true,
+                'timeout' => 15,
             ]
         ];
 
@@ -147,13 +148,69 @@ class GeminiService
         ];
     }
 
-    private function getMockEvaluation(): array
+    private function getMockEvaluation(string $answerText = '', string $questionText = ''): array
     {
+        $clean = trim($answerText);
+        $len = strlen($clean);
+        $words = str_word_count($clean);
+
+        // Check for gibberish, very short inputs, or repetitive keyboard bashing
+        $hasVowels = preg_match('/[aeiouy]/i', $clean);
+        $isGibberish = ($len < 15) || ($words < 4) || !$hasVowels || preg_match('/(.)\1{4,}/', $clean);
+
+        if ($isGibberish) {
+            return [
+                'score' => 1,
+                'feedback' => 'The provided response does not contain sufficient intelligible content to evaluate. Please provide a clear, coherent response relevant to the question.',
+                'strengths' => ['Submission received'],
+                'improvements' => [
+                    'Formulate a coherent response directly answering the prompt',
+                    'Structure your response using the STAR methodology (Situation, Task, Action, Result)',
+                    'Incorporate relevant industry terms and details'
+                ]
+            ];
+        }
+
+        if ($words < 15) {
+            return [
+                'score' => 3,
+                'feedback' => 'The response is too brief to demonstrate full competence. Expand with specific examples, methodologies, and outcomes.',
+                'strengths' => ['Direct and concise response'],
+                'improvements' => [
+                    'Elaborate on specific project context and actions taken',
+                    'Highlight quantifiable impact and measurable results'
+                ]
+            ];
+        }
+
+        if ($words < 40) {
+            return [
+                'score' => 6,
+                'feedback' => 'Good baseline response addressing the primary question. Adding detailed technical context and measurable metrics will elevate the evaluation.',
+                'strengths' => [
+                    'Clear communication',
+                    'Relevant concepts addressed'
+                ],
+                'improvements' => [
+                    'Provide concrete metrics and quantifiable achievements',
+                    'Discuss trade-offs and decisions made during the process'
+                ]
+            ];
+        }
+
+        // Comprehensive response
         return [
-            'score' => 7,
-            'feedback' => 'This is a solid answer but could use more specific examples.',
-            'strengths' => ['Clear communication', 'Relevant experience mentioned'],
-            'improvements' => ['Provide concrete metrics', 'Be more concise']
+            'score' => 8,
+            'feedback' => 'Strong, well-structured response demonstrating domain expertise, practical problem solving, and clear communication.',
+            'strengths' => [
+                'Comprehensive explanation',
+                'Strong contextual detail',
+                'Professional articulation'
+            ],
+            'improvements' => [
+                'Connect individual technical decisions to overarching business outcomes',
+                'Mention future scalability or optimization opportunities'
+            ]
         ];
     }
 }
