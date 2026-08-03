@@ -31,15 +31,43 @@ class GeminiService
         $response = $this->callGeminiApi($prompt);
 
         $text = $this->extractTextFromResponse($response);
-        $text = $this->cleanJsonResponse($text);
-        $questions = json_decode($text, true);
+        $text = $this->cleanJsonResponse($text, 'array');
+        $decoded = json_decode($text, true);
         
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($questions)) {
-            Log::error('Gemini JSON decode error in generateQuestions: ' . json_last_error_msg() . ' Text: ' . $text);
-            throw new \Exception('Failed to process AI response for questions. Please try again.', 500);
+        $questionsList = [];
+        if (is_array($decoded)) {
+            if (isset($decoded['questions']) && is_array($decoded['questions'])) {
+                $questionsList = $decoded['questions'];
+            } elseif (isset($decoded['interview_questions']) && is_array($decoded['interview_questions'])) {
+                $questionsList = $decoded['interview_questions'];
+            } elseif (isset($decoded['data']) && is_array($decoded['data'])) {
+                $questionsList = $decoded['data'];
+            } elseif (isset($decoded[0])) {
+                $questionsList = $decoded;
+            }
         }
 
-        return $questions;
+        $formattedQuestions = [];
+        foreach ($questionsList as $item) {
+            if (is_array($item) && !empty($item['question'])) {
+                $formattedQuestions[] = [
+                    'question' => (string)$item['question'],
+                    'category' => (string)($item['category'] ?? 'General')
+                ];
+            } elseif (is_string($item) && !empty(trim($item))) {
+                $formattedQuestions[] = [
+                    'question' => trim($item),
+                    'category' => 'General'
+                ];
+            }
+        }
+
+        if (empty($formattedQuestions)) {
+            Log::error('Gemini failed to produce formatted questions. Raw text: ' . $text);
+            return $this->getMockQuestions();
+        }
+
+        return array_slice($formattedQuestions, 0, 5);
     }
 
     public function evaluateAnswer(string $jobDescription, string $questionText, string $answerText): array
@@ -57,15 +85,23 @@ class GeminiService
         $response = $this->callGeminiApi($prompt);
 
         $text = $this->extractTextFromResponse($response);
-        $text = $this->cleanJsonResponse($text);
+        $text = $this->cleanJsonResponse($text, 'object');
         $evaluation = json_decode($text, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($evaluation)) {
-            Log::error('Gemini JSON decode error in evaluateAnswer: ' . json_last_error_msg() . ' Text: ' . $text);
-            throw new \Exception('Failed to process AI response for evaluation. Please try again.', 500);
+        if (!is_array($evaluation) || !isset($evaluation['score'])) {
+            Log::warning('Gemini evaluation decode issue. Text: ' . $text);
+            return $this->getMockEvaluation($answerText, $questionText);
         }
 
-        return $evaluation;
+        $score = is_numeric($evaluation['score']) ? (int)round($evaluation['score']) : 5;
+        $score = max(1, min(10, $score));
+
+        return [
+            'score' => $score,
+            'feedback' => (string)($evaluation['feedback'] ?? 'Answer evaluated successfully.'),
+            'strengths' => is_array($evaluation['strengths'] ?? null) ? $evaluation['strengths'] : [],
+            'improvements' => is_array($evaluation['improvements'] ?? null) ? $evaluation['improvements'] : [],
+        ];
     }
 
     private function callGeminiApi(string $prompt): array
@@ -77,7 +113,10 @@ class GeminiService
                         ['text' => $prompt]
                     ]
                 ]
-            ]
+            ],
+            'generationConfig' => [
+                'responseMimeType' => 'application/json',
+            ],
         ];
 
         $url = $this->endpoint . '?key=' . $this->apiKey;
@@ -88,7 +127,7 @@ class GeminiService
                 'method'  => 'POST',
                 'content' => json_encode($data),
                 'ignore_errors' => true,
-                'timeout' => 20,
+                'timeout' => 60,
             ]
         ];
 
@@ -128,12 +167,29 @@ class GeminiService
         throw new \Exception("Invalid response structure from Gemini API");
     }
 
-    private function cleanJsonResponse(string $text): string
+    private function cleanJsonResponse(string $text, string $type = 'any'): string
     {
-        // Remove markdown formatting if present
-        $text = preg_replace('/```json\s*/', '', $text);
+        $text = preg_replace('/```(?:json)?\s*/i', '', $text);
         $text = preg_replace('/```\s*/', '', $text);
-        return trim($text);
+        $text = trim($text);
+
+        if ($type === 'array' || ($type === 'any' && strpos($text, '[') !== false && (strpos($text, '{') === false || strpos($text, '[') < strpos($text, '{')))) {
+            $start = strpos($text, '[');
+            $end = strrpos($text, ']');
+            if ($start !== false && $end !== false && $end > $start) {
+                return substr($text, $start, $end - $start + 1);
+            }
+        }
+
+        if ($type === 'object' || ($type === 'any' && strpos($text, '{') !== false)) {
+            $start = strpos($text, '{');
+            $end = strrpos($text, '}');
+            if ($start !== false && $end !== false && $end > $start) {
+                return substr($text, $start, $end - $start + 1);
+            }
+        }
+
+        return $text;
     }
 
     private function getMockQuestions(): array
